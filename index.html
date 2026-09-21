@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Category Predictor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header h1 i {
+            font-size: 2.2rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 40px;
+        }
+
+        .input-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-section h2 i {
+            color: #4f46e5;
+        }
+
+        .complaint-input {
+            width: 100%;
+            min-height: 150px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            resize: vertical;
+            transition: all 0.3s;
+            line-height: 1.6;
+        }
+
+        .complaint-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .complaint-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .example-complaints {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .example-btn {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #4b5563;
+        }
+
+        .example-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px auto 0;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-section h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-section h2 i {
+            color: #4f46e5;
+        }
+
+        .result-card {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 6px solid #4f46e5;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .result-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-value {
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .category-payment { color: #dc2626; }
+        .category-login { color: #ea580c; }
+        .category-delivery { color: #059669; }
+        .category-technical { color: #2563eb; }
+        .category-other { color: #7c3aed; }
+
+        .priority-high { color: #dc2626; }
+        .priority-medium { color: #ea580c; }
+        .priority-low { color: #059669; }
+
+        .confidence-bar {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
+        .confidence-text {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 0.9rem;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 25px;
+            }
+            
+            .result-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-comment-dots"></i> Complaint Category Predictor</h1>
+            <p>Classify customer complaints into categories: Payment, Login, Delivery, Technical, or Other. Get automatic priority assignment for efficient handling.</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <h2><i class="fas fa-edit"></i> Enter Your Complaint</h2>
+                <textarea id="complaintInput" class="complaint-input" placeholder="Describe your issue here... For example: 'My payment was deducted but my order was not confirmed.'"></textarea>
+                
+                <div class="example-complaints">
+                    <button class="example-btn" onclick="setExample('My payment was deducted but my order was not confirmed.')">Payment Issue</button>
+                    <button class="example-btn" onclick="setExample('I cannot login to my account.')">Login Problem</button>
+                    <button class="example-btn" onclick="setExample('My order has not been delivered yet.')">Delivery Delay</button>
+                    <button class="example-btn" onclick="setExample('Website is not loading properly.')">Technical Issue</button>
+                    <button class="example-btn" onclick="setExample('Customer service is not responding.')">Other Complaint</button>
+                </div>
+
+                <button id="submitBtn" class="submit-btn" onclick="predictComplaint()">
+                    <i class="fas fa-search"></i> Analyze Complaint
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>Analyzing your complaint...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="result-section" id="resultSection">
+                <h2><i class="fas fa-chart-bar"></i> Analysis Results</h2>
+                <div class="result-card">
+                    <div class="result-row">
+                        <div class="result-label">
+                            <i class="fas fa-comment"></i> Your Complaint:
+                        </div>
+                        <div class="result-value" id="complaintText"></div>
+                    </div>
+                    
+                    <div class="result-row">
+                        <div class="result-label">
+                            <i class="fas fa-tag"></i> Category:
+                        </div>
+                        <div class="result-value">
+                            <span id="categoryValue" class="category-payment">Payment</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-row">
+                        <div class="result-label">
+                            <i class="fas fa-exclamation-triangle"></i> Priority:
+                        </div>
+                        <div class="result-value">
+                            <span id="priorityValue" class="priority-high">High</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-row">
+                        <div class="result-label">
+                            <i class="fas fa-chart-line"></i> Confidence:
+                        </div>
+                        <div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill"></div>
+                            </div>
+                            <div class="confidence-text">
+                                <span id="confidenceText">0%</span> confidence
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="submit-btn" onclick="resetForm()" style="background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%); margin-top: 30px;">
+                    <i class="fas fa-redo"></i> Analyze Another Complaint
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Complaint Category Predictor &copy; 2024 | Powered by Machine Learning</p>
+        </div>
+    </div>
+
+    <script>
+        // Example complaint buttons
+        function setExample(text) {
+            document.getElementById('complaintInput').value = text;
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('complaintInput').value = '';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // Predict complaint category
+        async function predictComplaint() {
+            const complaintText = document.getElementById('complaintInput').value.trim();
+            
+            if (!complaintText) {
+                showError('Please enter a complaint before analyzing.');
+                return;
+            }
+            
+            // Show loading, hide other elements
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('submitBtn').disabled = true;
+            
+            try {
+                // Call the backend API
+                const response = await fetch('http://localhost:8000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        complaint: complaintText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Display results
+                document.getElementById('complaintText').textContent = complaintText;
+                
+                // Set category with appropriate class
+                const categoryElement = document.getElementById('categoryValue');
+                categoryElement.textContent = data.category;
+                categoryElement.className = `category-${data.category.toLowerCase()}`;
+                
+                // Set priority with appropriate class
+                const priorityElement = document.getElementById('priorityValue');
+                priorityElement.textContent = data.priority;
+                priorityElement.className = `priority-${data.priority.toLowerCase()}`;
+                
+                // Set confidence
+                const confidencePercent = Math.round(data.confidence * 100);
+                document.getElementById('confidenceText').textContent = `${confidencePercent}%`;
+                document.getElementById('confidenceFill').style.width = `${confidencePercent}%`;
+                
+                // Show result section
+                document.getElementById('resultSection').style.display = 'block';
+                
+            } catch (error) {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+                
+                // Show error
+                showError(`Failed to analyze complaint: ${error.message}. Make sure the backend server is running.`);
+                console.error('Prediction error:', error);
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Initialize with example complaint
+        window.onload = function() {
+            setExample('My payment was deducted but my order was not confirmed.');
+        }
+    </script>
+</body>
+</html>
